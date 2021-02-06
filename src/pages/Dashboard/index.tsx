@@ -24,51 +24,59 @@ const Dashboard: React.FC = () => {
   const [editingFood, setEditingFood] = useState<IFoodPlate>({} as IFoodPlate);
   const [modalOpen, setModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
-  const [reloadFoods, setReloadFoods] = useState(false);
 
   useEffect(() => {
     api.get('/foods').then(response => {
       setFoods(response.data);
     });
-  }, [reloadFoods]);
+  }, []);
 
   const handleAddFood = useCallback(
     async (food: Omit<IFoodPlate, 'id' | 'available'>) => {
       try {
-        await api.post('/foods', { available: true, ...food });
-        setReloadFoods(!reloadFoods);
+        const response = await api.post('/foods', { ...food, available: true });
+
+        setFoods([...foods, response.data]);
       } catch (err) {
         console.log(err);
       }
     },
-    [reloadFoods],
+    [foods],
   );
 
   const handleUpdateFood = useCallback(
     async (food: Omit<IFoodPlate, 'id' | 'available'>) => {
       try {
-        await api.put(`/foods/${editingFood.id}`, {
+        const response = await api.put(`/foods/${editingFood.id}`, {
           available: editingFood.available,
           ...food,
         });
-        setReloadFoods(!reloadFoods);
+
+        setFoods(
+          foods.map(mappedFood =>
+            mappedFood.id === editingFood.id
+              ? { ...response.data }
+              : mappedFood,
+          ),
+        );
       } catch (err) {
         console.log(err);
       }
     },
-    [reloadFoods, editingFood],
+    [foods, editingFood],
   );
 
   const handleDeleteFood = useCallback(
     async (id: number) => {
       try {
         await api.delete(`/foods/${id}`);
-        setReloadFoods(!reloadFoods);
+
+        setFoods(foods.filter(food => food.id !== id));
       } catch (err) {
         console.log(err);
       }
     },
-    [reloadFoods],
+    [foods],
   );
 
   const toggleModal = useCallback(() => {

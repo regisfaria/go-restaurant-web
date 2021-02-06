@@ -28,11 +28,15 @@ const Food: React.FC<IProps> = ({
   const [isAvailable, setIsAvailable] = useState(food.available);
 
   const toggleAvailable = useCallback(async () => {
-    const newAvailability = !isAvailable;
+    try {
+      const newAvailability = !isAvailable;
 
-    setIsAvailable(newAvailability);
+      setIsAvailable(newAvailability);
 
-    await api.patch(`/foods/${food.id}`, { availability: newAvailability });
+      await api.patch(`/foods/${food.id}`, { availability: newAvailability });
+    } catch (error) {
+      console.log(error);
+    }
   }, [isAvailable, food.id]);
 
   const setEditingFood = useCallback(() => {
